@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DISTRICT 909 — DJ Applications</title>
+<meta name="description" content="DISTRICT 909 is looking for DJs. House in all its forms — Copenhagen. Apply now.">
+<meta property="og:title" content="DISTRICT 909 — DJ Applications">
+<meta property="og:description" content="Who's on the decks? Could be you. Applications open — Copenhagen.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0b0b0b">
+<style>
+  html,body{margin:0;height:100%;background:#0b0b0b;color:#f2efe9;font-family:Helvetica,Arial,sans-serif}
+  .load{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+  .logo{border:2px solid #f2efe9;padding:6px 12px;font-weight:800;letter-spacing:.12em}
+  .bar{width:160px;height:3px;background:#2a2a2a;overflow:hidden}
+  .bar i{display:block;width:40%;height:100%;background:#e8452c;animation:s 1s ease-in-out infinite}
+  @keyframes s{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+  .msg{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#9a958d}
+  .err a{color:#e8452c}
+</style>
+</head>
+<body>
+<div class="load" id="load">
+  <div class="logo">DISTRICT 909</div>
+  <div class="bar"><i></i></div>
+  <div class="msg" id="msg">Loading application…</div>
+</div>
+<script>
+(function () {
+  // Google Apps Script backend (stores applications in the Google Form / Sheet)
+  var API = 'https://script.google.com/macros/s/AKfycbxbzdDYdynwy1xe-NYGRQ-WZUaePZiNkc33-Af4p2MpUExmakxde6UwN1vdO-WyXVydzg/exec';
+
+  // Stand-in for google.script.run so the form's own code works outside Apps Script
+  var SHIM = '<script>(function(){var API=' + JSON.stringify(API) + ';' +
+    'function mk(ok,fail){return new Proxy({},{get:function(_,name){' +
+      'if(name==="withSuccessHandler")return function(h){return mk(h,fail)};' +
+      'if(name==="withFailureHandler")return function(h){return mk(ok,h)};' +
+      'return function(arg){fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({fn:name,arg:arg})})' +
+        '.then(function(r){return r.json()})' +
+        '.then(function(j){if(j.ok){ok&&ok(j.result)}else{fail&&fail(new Error(j.error))}})' +
+        '.catch(function(){fail&&fail(new Error("Could not reach the server."))});};' +
+    '}})}' +
+    'window.google=window.google||{};window.google.script={run:mk(null,null)};})();<\/script>';
+
+  function fail() {
+    document.getElementById('msg').innerHTML =
+      '<span class="err">Couldn’t load the form. Please refresh the page.</span>';
+  }
+
+  fetch(API + '?format=raw')
+    .then(function (r) { if (!r.ok) throw 0; return r.text(); })
+    .then(function (html) {
+      if (html.indexOf('<html') === -1) throw 0;
+      html = html.replace(/<head([^>]*)>/i, '<head$1>' + SHIM);
+      document.open();
+      document.write(html);
+      document.close();
+    })
+    .catch(fail);
+})();
+</script>
+</body>
+</html>
